@@ -1,1 +1,458 @@
-# for-you-my-pitico
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>NossoAmor</title>
+  <style>
+    * {
+      margin: 0; padding: 0; box-sizing: border-box;
+    }
+    body {
+      background: linear-gradient(to bottom, #ffeef5 0%, #ffd3e3 50%, #ffc0cb 100%);
+      font-family: 'Arial', sans-serif;
+      overflow: hidden;
+      text-align: center;
+      height: 100vh;
+      width: 100vw;
+      background-attachment: fixed;
+      position: relative;
+      color: #c2185b;
+    }
+    .screen {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: transparent;
+      transition: opacity 0.8s ease;
+      z-index: 10;
+      pointer-events: auto;
+    }
+    .hidden {
+      opacity: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+    button {
+      font-size: 22px;
+      padding: 12px 30px;
+      border-radius: 15px;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      margin: 0 10px;
+    }
+    #yesBtn {
+      background-color: #e91e63;
+      color: white;
+    }
+    #noBtn {
+      background-color: #bbb;
+      color: black;
+      position: relative;
+    }
+    #noBtn:hover {
+      background-color: #999;
+    }
+
+    #spaceScreen .space-key {
+      font-size: 48px;
+      color: white;
+      background: #ff4f81;
+      padding: 20px 60px;
+      border-radius: 20px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      cursor: pointer;
+      animation: pulse 2s infinite;
+      user-select: none;
+      margin-top: 20px;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    #spaceScreen h1 {
+      margin-bottom: 20px;
+      color: #c2185b;
+    }
+
+    .progress-container {
+      width: 80%;
+      max-width: 500px;
+      height: 30px;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      overflow: hidden;
+      margin-top: 40px;
+    }
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(to right, #ff4f81, #ff9aaf);
+      border-radius: 15px;
+      transition: width 0.5s ease;
+    }
+    .message {
+      margin-top: 15px;
+      font-size: 18px;
+      color: #c2185b;
+    }
+
+    .heart {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      background-color: red;
+      clip-path: polygon(50% 0%, 61% 19%, 78% 19%, 100% 38%, 100% 62%, 78% 81%, 50% 100%, 22% 81%, 0% 62%, 0% 38%, 22% 19%, 39% 19%);
+      animation: flyToTop 1.5s forwards;
+      pointer-events: none;
+      z-index: 1;
+    }
+    @keyframes flyToTop {
+      0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-80vh) scale(0.5);
+        opacity: 0;
+      }
+    }
+
+    #nameScreen input {
+      font-size: 24px;
+      padding: 10px;
+      border-radius: 15px;
+      border: 2px solid #c2185b;
+      margin-top: 20px;
+      text-align: center;
+      width: 300px;
+    }
+    #nameScreen button {
+      margin-top: 20px;
+      padding: 10px 30px;
+      font-size: 20px;
+      border-radius: 15px;
+      border: none;
+      background: #ff4f81;
+      color: white;
+      cursor: pointer;
+    }
+    #nameScreen button:hover {
+      background: #ff2364;
+    }
+
+    #blueScreen {
+      background: #0078d7;
+      color: white;
+      flex-direction: column;
+      font-family: monospace, monospace;
+      font-weight: bold;
+      font-size: 24px;
+      padding: 30px;
+      text-align: center;
+    }
+    #blueScreen button {
+      margin-top: 30px;
+      padding: 12px 30px;
+      font-size: 20px;
+      border-radius: 15px;
+      border: none;
+      background: #fff;
+      color: #0078d7;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    #blueScreen button:hover {
+      background: #ddd;
+    }
+
+    /* Carousel */
+    .carousel-wrapper {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px;
+      height: 320px;
+      perspective: 1000px;
+      opacity: 0;
+      transition: opacity 1.5s ease;
+      z-index: 20;
+      pointer-events: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      display: flex;
+    }
+    .carousel-wrapper.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .carousel {
+      width: 100%;
+      height: 260px;
+      position: relative;
+      transform-style: preserve-3d;
+      animation: spin 20s linear infinite;
+    }
+    .photo {
+      position: absolute;
+      width: 200px;
+      height: 240px;
+      background: white;
+      border: 5px solid #fff;
+      border-radius: 10px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+      text-align: center;
+      transform-origin: center center;
+    }
+    .photo img {
+      width: 100%;
+      height: 85%;
+      object-fit: cover;
+      border-bottom: 2px solid #ccc;
+      border-radius: 5px 5px 0 0;
+    }
+    .photo p {
+      margin: 5px 0;
+      font-size: 14px;
+      color: #c2185b;
+      font-weight: bold;
+    }
+    @keyframes spin {
+      from {
+        transform: rotateY(0deg);
+      }
+      to {
+        transform: rotateY(360deg);
+      }
+    }
+    .love-message {
+      margin-top: 15px;
+      font-size: 22px;
+      color: #c2185b;
+      font-weight: bold;
+      opacity: 0;
+      transition: opacity 2s ease;
+      user-select: none;
+    }
+    .love-message.show {
+      opacity: 1;
+    }
+
+    audio {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Tela 1: Pergunta Você me ama? -->
+  <div class="screen" id="firstQuestion">
+    <h1>Você me ama?</h1>
+    <div>
+      <button id="yesBtn">Sim</button>
+      <button id="noBtn">Não</button>
+    </div>
+  </div>
+
+  <!-- Tela 2: Pressione Espaço -->
+  <div class="screen hidden" id="spaceScreen">
+    <h1 id="title">Aperte Espaço para carregar nosso amor 💕</h1>
+    <div class="space-key" id="spaceKey">SPACE</div>
+    <div class="progress-container">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+    <p class="message" id="message">0%</p>
+  </div>
+
+  <!-- Tela 3: Pergunta do nome -->
+  <div class="screen hidden" id="nameScreen">
+    <h1>Escreva o primeiro nome da pessoa que você mais ama no universo</h1>
+    <input type="text" id="nameInput" autocomplete="off" />
+    <button id="submitName">Enviar</button>
+  </div>
+
+  <!-- Tela azul de erro -->
+  <div class="screen hidden" id="blueScreen">
+    <h1>:(</h1>
+    <h2>ERRO 0x0000FF: Nome incorreto (você está sujeito a pancada...) </h2>
+    <p>Por favor, tente novamente</p>
+    <button id="tryAgainBtn">Voltar</button>
+  </div>
+
+  <!-- Carrossel e mensagem final -->
+  <div class="carousel-wrapper" id="carouselWrapper">
+    <div class="carousel" id="carousel">
+      <div class="photo" style="transform: rotateY(0deg) translateZ(300px);"><img src="https://i.pinimg.com/736x/3f/29/aa/3f29aad6968208d4a0238c572407cff7.jpg" /><p>Nosso início</p></div>
+      <div class="photo" style="transform: rotateY(60deg) translateZ(300px);"><img src="https://i.pinimg.com/736x/29/df/27/29df2780f8de1b28ed664ec5e59788a0.jpg" alt="Foto 2" /><p>Risadas</p></div>
+      <div class="photo" style="transform: rotateY(120deg) translateZ(300px);"><img src="https://i.pinimg.com/736x/10/68/02/10680267863b97648e427ffb92a53b9a.jpg" alt="Foto 3" /><p>Aventura</p></div>
+      <div class="photo" style="transform: rotateY(180deg) translateZ(300px);"><img src="https://i.pinimg.com/736x/59/b9/4d/59b94dea1957731cbec7647627c71be7.jpg" alt="Foto 4" /><p>Juntos</p></div>
+      <div class="photo" style="transform: rotateY(240deg) translateZ(300px);"><img src="https://i.pinimg.com/736x/b1/45/1a/b1451a99818e4f6dac39703a9833cbc6.jpg" alt="Foto 5" /><p>Sorrisos</p></div>
+      <div class="photo" style="transform: rotateY(300deg) translateZ(300px);"><img src="https://i.pinimg.com/736x/b1/17/6a/b1176aaa39e0cbfc27e14d107fd469a5.jpg" alt="Foto 6" /><p>Amor</p></div>
+    </div>
+    <p class="love-message" id="loveMessage">eu te amo, daqui até a lua e de volta - feliz dia dos namorados Pitico 💖</p>
+  </div>
+
+  <audio id="loveSong" src="https://cdn.pixabay.com/download/audio/2022/03/17/audio_9d24620938.mp3?filename=love-song-11317.mp3" preload="auto"></audio>
+
+<script>
+  const firstQuestion = document.getElementById('firstQuestion');
+  const yesBtn = document.getElementById('yesBtn');
+  const noBtn = document.getElementById('noBtn');
+
+  const spaceScreen = document.getElementById('spaceScreen');
+  const progressBar = document.getElementById('progressBar');
+  const message = document.getElementById('message');
+  const spaceKey = document.getElementById('spaceKey');
+
+  const nameScreen = document.getElementById('nameScreen');
+  const nameInput = document.getElementById('nameInput');
+  const submitName = document.getElementById('submitName');
+
+  const blueScreen = document.getElementById('blueScreen');
+  const tryAgainBtn = document.getElementById('tryAgainBtn');
+
+  const carouselWrapper = document.getElementById('carouselWrapper');
+  const loveMessage = document.getElementById('loveMessage');
+  const loveSong = document.getElementById('loveSong');
+
+  // --- Estado inicial ---
+
+  // Botão Não foge ao passar o mouse
+  noBtn.addEventListener('mouseenter', () => {
+    const randomX = Math.floor(Math.random() * (window.innerWidth - noBtn.offsetWidth));
+    const randomY = Math.floor(Math.random() * (window.innerHeight - noBtn.offsetHeight));
+    noBtn.style.position = 'absolute';
+    noBtn.style.left = randomX + 'px';
+    noBtn.style.top = randomY + 'px';
+  });
+
+  // Clicar em Sim: vai para a tela do espaço
+  yesBtn.addEventListener('click', () => {
+    showScreen(spaceScreen);
+    hideScreen(firstQuestion);
+    resetProgress();
+  });
+
+  // Função para esconder uma tela
+  function hideScreen(screen) {
+    screen.classList.add('hidden');
+  }
+  // Função para mostrar uma tela
+  function showScreen(screen) {
+    screen.classList.remove('hidden');
+  }
+
+  // Variáveis controle da barra
+  let progress = 0;
+  let heartsInterval;
+
+  function resetProgress() {
+    progress = 0;
+    updateProgress();
+  }
+
+  function updateProgress() {
+    progressBar.style.width = progress + '%';
+    message.textContent = progress + '%';
+  }
+
+  // Função para criar corações voadores na tela do espaço
+  function createHeart() {
+    const heart = document.createElement('div');
+    heart.classList.add('heart');
+    heart.style.left = (window.innerWidth / 2 + (Math.random() * 200 - 100)) + 'px';
+    heart.style.top = (window.innerHeight / 2 + (Math.random() * 100 - 50)) + 'px';
+    document.body.appendChild(heart);
+
+    setTimeout(() => {
+      heart.remove();
+    }, 1500);
+  }
+
+  // Contador da barra ao apertar espaço
+  function incrementProgress() {
+    if (progress < 100) {
+      progress += 5;
+      updateProgress();
+      createHeart();
+    }
+    if (progress >= 100) {
+      document.removeEventListener('keydown', handleSpacePress);
+      setTimeout(() => {
+        showNameScreen();
+      }, 700);
+    }
+  }
+
+  function handleSpacePress(e) {
+    if (e.code === 'Space') {
+      e.preventDefault();
+      incrementProgress();
+    }
+  }
+
+  function showNameScreen() {
+    showScreen(nameScreen);
+    hideScreen(spaceScreen);
+    nameInput.value = '';
+    nameInput.focus();
+  }
+
+  // Enviar nome
+  submitName.addEventListener('click', checkName);
+  nameInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') checkName();
+  });
+
+  function checkName() {
+    const inputName = nameInput.value.trim().toLowerCase();
+    if (inputName === 'sabrina' || inputName === 'sabri' || inputName === 'sab') {
+      // Nome correto, mostrar carrossel
+      showCarousel();
+      hideScreen(nameScreen);
+    } else {
+      // Nome errado, mostrar tela azul
+      showScreen(blueScreen);
+      hideScreen(nameScreen);
+    }
+  }
+
+  // Botão voltar na tela azul
+  tryAgainBtn.addEventListener('click', () => {
+    showScreen(nameScreen);
+    hideScreen(blueScreen);
+    nameInput.focus();
+  });
+
+  // Mostrar o carrossel e iniciar música
+  function showCarousel() {
+    carouselWrapper.classList.add('show');
+    loveSong.play();
+    setTimeout(() => {
+      loveMessage.classList.add('show');
+    }, 1500);
+  }
+
+  // Reset progress and setup space key listener on showing spaceScreen
+  spaceScreen.addEventListener('transitionend', () => {
+    if (!spaceScreen.classList.contains('hidden')) {
+      progress = 0;
+      updateProgress();
+      document.addEventListener('keydown', handleSpacePress);
+    } else {
+      document.removeEventListener('keydown', handleSpacePress);
+    }
+  });
+
+</script>
+
+</body>
+</html>
